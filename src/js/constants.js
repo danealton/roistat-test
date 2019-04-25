@@ -21,4 +21,6 @@ export const PC_SELECT = 'PC_SELECT';
 /* ============================================================================================= */
 /* < PC_USER_LIST > */
 /* ============================================================================================= */
+export const PC_USER_LIST = 'PC_USER_LIST';
+
 export const PC_UPDATED_USER_LIST = 'PC_UPDATED_USER_LIST';

@@ -16,21 +16,36 @@
         <div v-if="emptyData" class="table__empty">
           Данные отсутствуют
         </div>
-        <div
+        <template
           v-for="(row, rowId) in rows"
-          :key="rowId"
-          :class="['table__row', {
-            'table__row-is-minion': isMinion(row)
-          }]"
         >
           <div
-            v-for="({ columnName, superior }, cellId) in columns"
-            :key="cellId"
-            class="table__cell"
+            :key="rowId"
+            :class="['table__row']"
           >
-            {{ row[columnName] }}
+            <div
+              v-for="({ columnName }, cellId) in columns"
+              :key="cellId"
+              class="table__cell"
+            >
+              {{ row[columnName] }}
+            </div>
           </div>
-        </div>
+          <template v-if="row.superior">
+            <div
+              :key="row.superior.id"
+              :class="['table__row', 'table__row-is-minion']"
+            >
+              <div
+                v-for="({ columnName }, cellId) in columns"
+                :key="cellId"
+                class="table__cell"
+              >
+                {{ row.superior[columnName] }}
+              </div>
+            </div>
+          </template>
+        </template>
       </div>
     </div>
   </main>
@@ -40,8 +55,11 @@
 import PC_EVENT_BUS from 'js/pc_event_bus';
 
 import {
+  PC_USER_LIST,
   PC_UPDATED_USER_LIST
 } from 'js/constants';
+
+// const _ = require('lodash');
 
 export default {
   name: 'PCGridUser',
@@ -50,7 +68,7 @@ export default {
     PC_EVENT_BUS.$on(PC_UPDATED_USER_LIST, this.updateUserList);
   },
   mounted() {
-    if (localStorage && localStorage.getItem('userList')) {
+    if (localStorage && localStorage.getItem(PC_USER_LIST)) {
       this.updateUserList();
     }
   },
@@ -79,7 +97,27 @@ export default {
   },
   methods: {
     updateUserList() {
-      this.rows = JSON.parse(localStorage.getItem('userList'));
+      const userList = JSON.parse(localStorage.getItem(PC_USER_LIST));
+      this.rows = this.prepareUserList(userList);
+    },
+    prepareUserList(userList) {
+      return userList;
+      // const users = JSON.parse(JSON.stringify(userList));
+      // return userList.map((currentUser, index) => {
+      //   const { superior } = currentUser;
+      //   let children = null;
+      //   if (superior !== null) {
+      //     children = _.find(users, (user) => user.id === superior.id);
+      //     // const parent = _.find(userList, (user) => user.id === superior.id);
+      //     // parent.children = userList[index];
+      //     // return parent;
+      //   }
+      //   return {
+      //     ...currentUser,
+      //     children
+      //   };
+      //   // return currentUser;
+      // });
     },
     isMinion({ superior }) {
       return superior !== null;

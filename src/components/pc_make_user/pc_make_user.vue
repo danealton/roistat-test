@@ -1,5 +1,9 @@
 <template>
-  <PCModal v-if="isShowForm" :type="'PCForm'" @close="onHideForm">
+  <PCModal
+    v-if="isShowForm"
+    :type="'PCForm'"
+    @close="onHideForm"
+  >
     <template slot="header">
       Добавление пользователя
     </template>
@@ -15,7 +19,7 @@
         </div>
         <PCSelect
           v-if="isSuperiors"
-          :variants="usernameList"
+          :variants="superiorList"
           :placeholder="'Выберите руководителя'"
           class="form__select"
           @select="select"
@@ -50,9 +54,11 @@
 import PC_EVENT_BUS from 'js/pc_event_bus';
 
 import {
+  PC_USER_LIST,
   PC_UPDATED_USER_LIST
 } from 'js/constants';
 
+const _ = require('lodash');
 const uniqid = require('uniqid');
 
 export default {
@@ -62,8 +68,8 @@ export default {
     PC_EVENT_BUS.$on('addUser', this.onShowForm);
   },
   mounted() {
-    if (localStorage && localStorage.getItem('userList')) {
-      this.userList = JSON.parse(localStorage.getItem('userList'));
+    if (localStorage && localStorage.getItem(PC_USER_LIST)) {
+      this.userList = JSON.parse(localStorage.getItem(PC_USER_LIST));
     }
   },
   beforeDestroy() {
@@ -80,9 +86,9 @@ export default {
   },
   computed: {
     isSuperiors() {
-      return this.userList.length;
+      return this.userList.length > 0;
     },
-    usernameList() {
+    superiorList() {
       return this.userList.map(({ username }) => username);
     },
   },
@@ -90,7 +96,7 @@ export default {
     userList: {
       handler() {
         console.log('userList changed!');
-        localStorage.setItem('userList', JSON.stringify(this.userList));
+        localStorage.setItem(PC_USER_LIST, JSON.stringify(this.userList));
         PC_EVENT_BUS.$emit(PC_UPDATED_USER_LIST, {});
       },
       deep: true,
@@ -105,7 +111,7 @@ export default {
     },
     select(payload) {
       console.log('select', payload);
-      this.currentSuperior = payload;
+      this.currentSuperior = _.find(this.userList, ({ username }) => username === payload.variant);
     },
     onResetForm() {
       this.username = '';
